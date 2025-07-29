@@ -12,6 +12,7 @@ Table episodes {
 Table subjects {
   id int [pk, increment]
   episode_id varchar [ref: > episodes.id]
+  subject varchar
 }
 
 Table colors {
