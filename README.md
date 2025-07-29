@@ -28,6 +28,14 @@ a front-end to allow their viewers to filter the episodes. Now, they've hired
 you to help them with the process of designing and building a database that will
 house the collected data in a way that is usable, and build an API to access it.
 
+For this project, I will be using Firebase Firestore as my database. The reason
+I choose Firebase is that I am familiar with Firebase Firestore, but so far
+have only worked with interfacing with it from the front-end or with Firebase
+Admin in Python. This week, I am starting on a collaborative passion project
+where I will be creating an API to interface with a Firebase Firestore database.
+This is the perfect oportunity to do the same thing for this project to get some
+practice in.
+
 ----
 
 ### ✅ Tasks checklist:

@@ -1,0 +1,26 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table episodes {
+  id varchar [pk]
+  season int
+  episode_num int
+  title varchar
+  air_date date
+}
+
+Table subjects {
+  id int [pk, increment]
+  episode_id varchar [ref: > episodes.id]
+}
+
+Table colors {
+  id int [pk, increment]
+  name varchar
+}
+
+Table episode_colors {
+  episode_id varchar [ref: > episodes.id]
+  color_id int [ref: > colors.id]
+  primary key (episode_id, color_id)
+}
