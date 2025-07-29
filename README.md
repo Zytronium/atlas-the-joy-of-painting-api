@@ -39,13 +39,13 @@ practice in.
 ----
 
 ### ✅ Tasks checklist:
-- [ ] ​0. Design a Database (0/5 pts)
+- [ ] ​0. Design a Database (2/5 pts)
 - [ ] ​1. Extract, Transform, Load (0/4 pts)
 - [ ] ​2. API (0/4 pts)
 
 
 - [X] Readme
-- [ ] **Everything Done ✓** (0/13 pts) - 0%
+- [ ] **Everything Done ✓** (2/13 pts) - 15%
 
 >### Progress Goals:
 ><strong>Friday: 8% (task 0)</strong>  
