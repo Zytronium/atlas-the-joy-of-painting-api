@@ -36,7 +36,9 @@ for _, row in colors_data.iterrows():
         "youtube_src": row["youtube_src"],
         "colors": row["colors"],
         "subjects": subjects_dict.get(episode_id, []),
-        "air_date": date_lookup.get(title, None)
+        "air_date": date_lookup.get(title, None),
+        "season": row["season"],
+        "episode": row["episode"]
     }
 
 for episode_id, episode_data in episode_dict.items():
