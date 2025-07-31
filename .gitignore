@@ -3,3 +3,4 @@
 */*-gitignore.*
 the-joy-of-coding-firebase-adminsdk-*.json
 node_modules/
+.venv/
