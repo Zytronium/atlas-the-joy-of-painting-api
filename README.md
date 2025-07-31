@@ -5,7 +5,7 @@ for getting data on episodes of "The Joy of Painting."
 
 ETL stands for Extract, Transform, Load, which is the process of taking data
 from multiple unique sources, modifying them, and then storing them in a
-centralized database, This data may come in many forms, but usually CSV or JSON.
+centralized database. This data may come in many forms, but usually CSV or JSON.
 
 The hypothetical scenario for this project is that your local public broadcasting
 station has an overwhelming number of requests for info on "The Joy of Painting"
