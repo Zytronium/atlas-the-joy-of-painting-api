@@ -14,26 +14,33 @@ date_data = pd.read_csv("Episode_Dates.csv", sep="|")
 colors_data["episode_id"] = colors_data.apply(
     lambda row: f"S{int(row['season']):02d}E{int(row['episode']):02d}", axis=1
 )
+colors_data["colors"] = colors_data["colors"].str.strip("[]").str.replace("'", "").str.split(", ")
 
-colors_grouped = colors_data.groupby("episode_id")["colors"].apply(lambda list : list.str.replace("'", "").str.replace("[", "").str.replace("]", "").str.split(", ")).to_dict()
-fixed_colors_dict = {}
-for key in colors_grouped:
-    fixed_colors_dict[key[0]] = colors_grouped[key]
+subjects_dict = {}
+subject_cols = subject_data.columns[2:]  # skip EPISODE and TITLE
+for _, row in subject_data.iterrows():
+    episode_id = row["EPISODE"]
+    subjects = [col for col in subject_cols if int(row[col]) == 1]
+    subjects_dict[episode_id] = subjects
 
-print(fixed_colors_dict)
+date_data["title"] = date_data["title"].str.replace('"', "").str.strip()
+date_lookup = dict(zip(date_data["title"], date_data["date"].str.strip("()")))
 
-subjects_dict = subject_data.set_index("EPISODE")["TITLE"].to_dict()
+episode_dict = {}
+for _, row in colors_data.iterrows():
+    episode_id = row["episode_id"]
+    title = row["painting_title"]
+    episode_dict[episode_id] = {
+        "title": title,
+        "img_src": row["img_src"],
+        "youtube_src": row["youtube_src"],
+        "colors": row["colors"],
+        "subjects": subjects_dict.get(episode_id, []),
+        "air_date": date_lookup.get(title, None)
+    }
 
-print(subjects_dict)
+for episode_id, episode_data in episode_dict.items():
+    db.collection("episodes").document(episode_id).set(episode_data)
+    print(f"Uploaded: {episode_id}")
 
-dates_dict = date_data.set_index("title")["date"].to_dict()
-for episode in dates_dict:
-    pass
-print(dates_dict)
-
-episodes_dict = {}
-
-# --------------------------- #
-
-
-# db.collection("episodes").document(doc_id).set(episode_data)
+print("All episodes uploaded!")
