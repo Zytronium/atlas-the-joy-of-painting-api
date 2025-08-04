@@ -33,7 +33,7 @@ I choose Firebase is that I am familiar with Firebase Firestore, but so far
 have only worked with interfacing with it from the front-end or with Firebase
 Admin in Python. This week, I am starting on a collaborative passion project
 where I will be creating an API to interface with a Firebase Firestore database.
-This is the perfect oportunity to do the same thing for this project to get some
+This is the perfect opportunity to do the same thing for this project to get some
 practice in.
 
 ----
@@ -41,10 +41,10 @@ practice in.
 ### ✅ Tasks checklist:
 - [X] ​0. Design a Database (5/5 pts)
 - [X] ​1. Extract, Transform, Load (4/4 pts)
-- [ ] ​2. API (0/4 pts)
+- [ ] ​2. API (2/4 pts)
 
 
 - [X] Readme
-- [ ] **Everything Done ✓** (9/13 pts) - 69%
+- [ ] **Everything Done ✓** (11/13 pts) - 85%
 
 ---
