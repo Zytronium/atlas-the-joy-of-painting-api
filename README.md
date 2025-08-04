@@ -38,6 +38,37 @@ practice in.
 
 ----
 
+## Important Notes:
+
+### Route: /episodes/filter
+This gets the episodes that match the given filters using query parameters.
+**Valid filters:**
+- /episodes/filter?month=MM/YYYY
+  - the `month` query parameter must include the month AND year in the MM/YYYY format.
+- /episodes/filter?subjects=subject1,Subject2,%20subject3
+  - the `subjects` query parameter must be a comma-separated string. Spaces (`%20`) between values are allowed and will be ignored. Values are not case-sensitive.
+- /episodes/filter?colors=color%201,color2,%20Color3
+  - the `colors` query parameter must be a comma-separated string. Spaces (`%20`) between values are allowed and will be ignored. Values are not case-sensitive.
+- /episodes/filter?colors=color1,color2&subjects=subject1
+  - multiple filters can be used in one request. You can use any number of filters as long as there's at least one and there are no duplicates.
+
+### Route: /episodes/filterName
+This gets the episode with the exact painting title as given in the query
+parameter `name`
+**Usage:**
+`/episodes/filterName?name=Autumn%20Splendor`
+This case sensitive value must match exactly and will return the first (and
+hopefully only) matching result if it matches.
+
+### Route: /episodes/:id
+This gets the episode of the given ID. IDs are formated as `SxxExx` where `Sxx`
+is the season number (i.e., Season 2 would be `S02` and Season 15 would be `S15`)
+and `Exx` is the episode number (i.e., Episode 2 would be `E02` and Episode
+13 would be `E13`). For example, to get Season 19, Episode 4, you would do
+`/episodes/S19E04`. There are 31 seasons each with 13 episodes.
+
+----
+
 ### ✅ Tasks checklist:
 - [X] ​0. Design a Database (5/5 pts)
 - [X] ​1. Extract, Transform, Load (4/4 pts)
