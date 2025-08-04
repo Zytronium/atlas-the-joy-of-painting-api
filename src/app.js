@@ -14,7 +14,7 @@ app.use(morgan("dev")); // Or "combined" for more detailed logs
 app.use(express.json());
 
 // Serve routes
-app.use(routes);
+app.use("/episodes", routes);
 
 // Run the server
 app.listen(PORT, () => {
