@@ -46,11 +46,32 @@ This gets the episodes that match the given filters using query parameters.
 - /episodes/filter?month=MM/YYYY
   - the `month` query parameter must include the month AND year in the MM/YYYY format.
 - /episodes/filter?subjects=subject1,Subject2,%20subject3
-  - the `subjects` query parameter must be a comma-separated string. Spaces (`%20`) between values are allowed and will be ignored. Values are not case-sensitive.
+  - the `subjects` query parameter must be a comma-separated string. Spaces (`%20`) between values are allowed and will be ignored. Subjects are NOT case-sensitive.
 - /episodes/filter?colors=color%201,color2,%20Color3
-  - the `colors` query parameter must be a comma-separated string. Spaces (`%20`) between values are allowed and will be ignored. Values are not case-sensitive.
+  - the `colors` query parameter must be a comma-separated string. Spaces (`%20`) between values are allowed and will be ignored. Colors ARE case-sensitive.
 - /episodes/filter?colors=color1,color2&subjects=subject1
   - multiple filters can be used in one request. You can use any number of filters as long as there's at least one and there are no duplicates.
+
+You can control how filters and their values are applied using two parameters:
+
+- `matchFilters`:
+  - `all` (default): An episode must satisfy all provided filters (i.e., month, subjects, and colors).
+  - `any`: An episode can satisfy any one of the provided filters.
+
+- `matchValues`:
+  - `all` (default): Within each filter, the episode must include all specified values (i.e., tree, trees, grass, etc.).
+  - `any`: Within each filter, the episode can include any one of the specified values.
+
+\* `matchFilters` is not implemented yet.
+
+Examples:
+- `/episodes/filter?matchFilters=all&matchValues=any`  
+  Episodes must match all provided filters, but within each filter, at least 1 value matches.
+
+- `/episodes/filter?matchFilters=any&matchValues=all`  
+  Episodes must fully satisfy at least one filter (i.e., all subjects match OR all colors match).
+
+Both parameters are optional and case-insensitive. Invalid or missing values default to `all`.
 
 ### Route: /episodes/filterName
 This gets the episode with the exact painting title as given in the query
@@ -72,10 +93,10 @@ and `Exx` is the episode number (i.e., Episode 2 would be `E02` and Episode
 ### ✅ Tasks checklist:
 - [X] ​0. Design a Database (5/5 pts)
 - [X] ​1. Extract, Transform, Load (4/4 pts)
-- [ ] ​2. API (2/4 pts)
+- [ ] ​2. API (3/4 pts)
 
 
 - [X] Readme
-- [ ] **Everything Done ✓** (11/13 pts) - 85%
+- [ ] **Everything Done ✓** (12/13 pts) - ~92%
 
 ---
