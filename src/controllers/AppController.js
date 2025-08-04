@@ -21,9 +21,8 @@ class AppController {
     const episodeName = req.query.name;
 
     // Ensure ?name=someValue exists in the URL
-    if (!episodeName) {
+    if (!episodeName)
       return res.status(400).send({ error: "Query param 'name' is required" });
-    }
 
     // Find episode from exact name
     const querySnapshot = await db
@@ -33,14 +32,12 @@ class AppController {
       .get();
 
     // Ensure this doc exists
-    if (querySnapshot.empty) {
-      console.log("test123455667");
+    if (querySnapshot.empty)
       return res.status(404).send({ error: "Episode not found." });
-    }
 
     // Get the first (and hopefully only) doc that matches the given params
-    const doc = querySnapshot.docs[0];
-    return res.status(200).send({ id: doc.id, ...doc.data() });
+    const epDoc = querySnapshot.docs[0];
+    return res.status(200).send({ id: epDoc.id, ...epDoc.data() });
   }
 
 }
