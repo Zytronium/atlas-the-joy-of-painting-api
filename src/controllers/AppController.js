@@ -28,7 +28,7 @@ class AppController {
     // Find episode from exact name
     const querySnapshot = await db
       .collection("episodes")
-      .where("title", "==", episodeName.replaceAll("%20", " "))
+      .where("title", "==", episodeName)
       .limit(1) // There shouldn't be any duplicates, so we won't handle the situation where there are any.
       .get();
 
