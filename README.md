@@ -90,6 +90,20 @@ and `Exx` is the episode number (i.e., Episode 2 would be `E02` and Episode
 
 ----
 
+## How to run
+
+1. Ensure you have Firebase set up to work with this project and that you have
+`the-joy-of-coding-firebase-adminsdk-fbsvc-b1a99d83d8.json` in the `src/` directory.
+You can download this file from Firebase Console. You may have to rename it to get
+the file names to match. Ensure it is gitignored, as this is a highly sensitive file.
+2. Open the root directory of this project (`atlas-the-joy-of-painting-api/`)
+3. Upload data to Firestore by running `python3 UploadData.py` (preferably with Python version 3.13)
+4. Run `npm install`
+5. Run `node src/app.js`
+6. Test either in browser or with Postman
+
+----
+
 ### ✅ Tasks checklist:
 - [X] ​0. Design a Database (5/5 pts)
 - [X] ​1. Extract, Transform, Load (4/4 pts)
