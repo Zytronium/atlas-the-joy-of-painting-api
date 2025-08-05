@@ -1,5 +1,4 @@
 const db = require("../utils/firebase");
-const { FieldValue, Timestamp } = require("firebase-admin").firestore;
 
 class AppController {
   static async getFromID(req, res) {
@@ -58,8 +57,13 @@ class AppController {
       });
     }
 
-    // Get the "episodes" collection reference as a starter for the query
-    let query = db.collection("episodes");
+    // Get the "episodes" collection reference as a starter for the master query if `matchFilters` is set to "all"
+    let masterQuery = db.collection("episodes");
+
+    // Create an array to contain each individual Firebase query for each filter
+    const queries = []; // This allows running each query separately if `matchFilters` is set to "any"
+
+    // `masterQuery` is used if `matchFilters` === "all", else, `queries` is used.
 
     // Build the query from the filters given
     if (month) {
@@ -72,52 +76,124 @@ class AppController {
       const end = new Date(Date.UTC(year, monthIndex + 1, 1));
 
       // Add the query
-      query = query
-        .where("air_date", ">=", start)
-        .where("air_date", "<", end);
+      if (matchFilters === "all") {
+        masterQuery = masterQuery
+          .where("air_date", ">=", start)
+          .where("air_date", "<", end);
+      } else {
+        queries.push(
+          db.collection("episodes")
+            .where("air_date", ">=", start)
+            .where("air_date", "<", end)
+        );
+      }
     }
     if (subjects) {
       // Translate comma-separated subjects into an array and convert to uppercase to make case-insensitive (only works for subjects, not colors)
       const subjectList = subjects.split(",").map(s => s.trim().toUpperCase());
-      // Add the query
+      // Add the query | Note: Don't get matchValues and matchFilters confused. They are both used here.
       if (matchValues === "all") {
+        // Create a single query that contains each .where query for each subject
+        let query = db.collection("episodes");
+
         // Add a query for each subject in the array
-        subjectList.forEach(value => {
-          query = query.where("subjects", "array-contains", value);
-        });
+        if (matchFilters === "all") {
+          subjectList.forEach(value => {
+            masterQuery = masterQuery.where("subjects", "array-contains", value);
+          });
+        } else {
+          subjectList.forEach(value => {
+            query = query.where("subjects", "array-contains", value);
+          });
+          // Add these as a single query to the queries array
+          queries.push(query);
+        }
       } else {
-        // Add a single query for the subject array
-        query = query.where("subjects", "array-contains-any", subjectList);
+        // Add a single query for the entire subject array
+        if (matchFilters === "all") {
+          masterQuery = masterQuery.where("subjects", "array-contains-any", subjectList);
+        } else {
+          queries.push(db.collection("episodes").where("subjects", "array-contains-any", subjectList));
+        }
       }
     }
     if (colors) {
       // Translate comma-separated colors into an array
       const colorList = colors.split(",").map(s => s.trim());
-      // Add the query
+      // Add the query | Note: Don't get matchValues and matchFilters confused. They are both used here.
       if (matchValues === "all") {
+        // Create a single query that contains each .where query for each color
+        let query = db.collection("episodes");
+
         // Add a query for each color in the array
-        colorList.forEach(value => {
-          query = query.where("colors", "array-contains", value);
-        });
+        if (matchFilters === "all") {
+          colorList.forEach(value => {
+            masterQuery = masterQuery.where("colors", "array-contains", value);
+          });
+        } else {
+          colorList.forEach(value => {
+            query = query.where("colors", "array-contains", value);
+          });
+          // Add these as a single query to the queries array
+          queries.push(query);
+        }
       } else {
-        // Add a single query for the color array
-        query = query.where("colors", "array-contains-any", colorList);
+        if (matchFilters === "all") {
+          masterQuery = masterQuery.where("colors", "array-contains-any", colorList);
+        } else {
+          // Add a single query for the entire color array
+          queries.push(db.collection("episodes").where("colors", "array-contains-any", colorList));
+        }
       }
     }
 
-    // Get list of episodes matching the given filters
-    const querySnapshot = await query.get();
+    // Create results array to later combine query results
+    let results = [];
 
-    // Check if any documents were found
-    if (querySnapshot.empty)
-      return res.status(404).send({ error: "No episodes found matching the given filters." });
+    if (matchFilters === "all") {
+      // Run the master query
 
-    // Map all matching docs to an array of episodes
-    const results = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+      // Get list of episodes matching the given filters
+      const snapshot = await masterQuery.get()
 
+      // Check if any documents were found
+      if (snapshot.empty) {
+        return res.status(404).send({ error: "No episodes found matching the given filters." });
+      }
+
+      // Map all matching docs to an array of episodes
+      results = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } else {
+      // Run all queries in `queries`
+
+      // Get each snapshot containing the episodes matching any of the filters for each query
+      const snapshots = await Promise.all(queries.map(q => q.get()));
+      const seen = new Set(); // A set to contain each doc and prevent duplicate results. Faster than using an array.
+
+      // Add each result to the results array, excluding duplicates
+      snapshots.forEach(snapshot => {
+        snapshot.forEach(doc => {
+          // Add this result to the results array if it's not been accounted for already
+          if (!seen.has(doc.id)) {
+            seen.add(doc.data());
+            results.push({
+              id: doc.id,
+              ...doc.data()
+            });
+          }
+        });
+      });
+
+      // Check if any results were found
+      if (results.length === 0) {
+        return res.status(404).send({ error: "No episodes found matching the given filters" });
+      }
+    }
+
+    // Return the results of this query.
     return res.status(200).send(results);
   }
 }
