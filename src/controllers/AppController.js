@@ -44,10 +44,10 @@ class AppController {
     const { month, subjects, colors } = req.query;
     // Get query param `matchValues`, case-insensitive, defaulting to 'all' if missing or invalid
     const matchValues = ["all", "any"].includes((req.query.matchValues || "").toLowerCase())
-      ? req.query.match.toLowerCase()
+      ? req.query.matchValues.toLowerCase()
       : "all"; // todo: consider changing to returning error 400 if value is invalid instead of silently defaulting to "all"
     const matchFilters = ["all", "any"].includes((req.query.matchFilters || "").toLowerCase())
-      ? req.query.match.toLowerCase()
+      ? req.query.matchFilters.toLowerCase()
       : "all"; // todo: consider changing to returning error 400 if value is invalid instead of silently defaulting to "all"
 
     // Ensure at least one filter is provided
