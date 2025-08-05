@@ -46,9 +46,9 @@ This gets the episodes that match the given filters using query parameters.
 - /episodes/filter?month=MM/YYYY
   - the `month` query parameter must include the month AND year in the MM/YYYY format.
 - /episodes/filter?subjects=subject1,Subject2,%20subject3
-  - the `subjects` query parameter must be a comma-separated string. Spaces (`%20`) between values are allowed and will be ignored. Subjects are NOT case-sensitive.
+  - the `subjects` query parameter must be a comma-separated string. Spaces (`%20`) between values are allowed and will be ignored. Subjects are NOT case-sensitive. If `matchValues` is set to "any", you cannot specify more than 10 subjects here.
 - /episodes/filter?colors=color%201,color2,%20Color3
-  - the `colors` query parameter must be a comma-separated string. Spaces (`%20`) between values are allowed and will be ignored. Colors ARE case-sensitive.
+  - the `colors` query parameter must be a comma-separated string. Spaces (`%20`) between values are allowed and will be ignored. Colors ARE case-sensitive. If `matchValues` is set to "any", you cannot specify more than 10 colors here.
 - /episodes/filter?colors=color1,color2&subjects=subject1
   - multiple filters can be used in one request. You can use any number of filters as long as there's at least one and there are no duplicates.
 
@@ -62,14 +62,18 @@ You can control how filters and their values are applied using two parameters:
   - `all` (default): Within each filter, the episode must include all specified values (i.e., tree, trees, grass, etc.).
   - `any`: Within each filter, the episode can include any one of the specified values.
 
-\* `matchFilters` is not implemented yet.
-
 Examples:
 - `/episodes/filter?matchFilters=all&matchValues=any`  
-  Episodes must match all provided filters, but within each filter, at least 1 value matches.
+  Episodes must match all provided filters, and within each filter, at least 1 value matches.
 
 - `/episodes/filter?matchFilters=any&matchValues=all`  
   Episodes must fully satisfy at least one filter (i.e., all subjects match OR all colors match).
+
+- `/episodes/filter?matchFilters=all&matchValues=all`  
+  Episodes must fully satisfy all filters.
+
+- `/episodes/filter?matchFilters=any&matchValues=any`  
+  Episodes must match at least one value from at least one filter.
 
 Both parameters are optional and case-insensitive. Invalid or missing values default to `all`.
 

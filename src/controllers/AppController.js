@@ -43,10 +43,10 @@ class AppController {
     // Get query params 'month', 'subjects', and 'colors'
     const { month, subjects, colors } = req.query;
     // Get query param `matchValues`, case-insensitive, defaulting to 'all' if missing or invalid
-    const matchValues = ["all", "any"].includes((req.query.match || "").toLowerCase())
+    const matchValues = ["all", "any"].includes((req.query.matchValues || "").toLowerCase())
       ? req.query.match.toLowerCase()
       : "all"; // todo: consider changing to returning error 400 if value is invalid instead of silently defaulting to "all"
-    const matchFilters = ["all", "any"].includes((req.query.match || "").toLowerCase())
+    const matchFilters = ["all", "any"].includes((req.query.matchFilters || "").toLowerCase())
       ? req.query.match.toLowerCase()
       : "all"; // todo: consider changing to returning error 400 if value is invalid instead of silently defaulting to "all"
 
@@ -55,6 +55,24 @@ class AppController {
       return res.status(400).send({
         error: "At least one of query params 'month', 'subjects', or 'colors' is required."
       });
+    }
+
+    // Translate comma-separated subjects into an array and convert to uppercase to make case-insensitive (only works for subjects, not colors)
+    const subjectList = subjects ? subjects.split(",").map(s => s.trim().toUpperCase()) : [];
+
+    // Translate comma-separated colors into an array
+    const colorList = colors ? colors.split(",").map(s => s.trim()) : [];
+
+    if (matchValues === "any") {
+      // Ensure <= 10 subjects are specified if matchValues is set to "any" (due to Firebase query limitations)
+      if (subjects && subjectList.length > 10) {
+        return res.status(400).send({ error: "Please specify less than 10 subjects when matchValues is set to \"any\"" })
+      }
+
+      // Ensure <= 10 subjects are specified if matchValues is set to "any" (due to Firebase query limitations)
+      if (colors && colorList.length > 10) {
+        return res.status(400).send({ error: "Please specify less than 10 colors when matchValues is set to \"any\"" })
+      }
     }
 
     // Get the "episodes" collection reference as a starter for the master query if `matchFilters` is set to "all"
@@ -75,6 +93,11 @@ class AppController {
       const start = new Date(Date.UTC(year, monthIndex, 1));
       const end = new Date(Date.UTC(year, monthIndex + 1, 1));
 
+      // Ensure month format is valid
+      if (isNaN(monthIndex) || isNaN(year) || monthIndex < 0 || monthIndex > 11) {
+        return res.status(400).send({ error: "Invalid month format. Expected MM/YYYY." });
+      }
+
       // Add the query
       if (matchFilters === "all") {
         masterQuery = masterQuery
@@ -89,8 +112,6 @@ class AppController {
       }
     }
     if (subjects) {
-      // Translate comma-separated subjects into an array and convert to uppercase to make case-insensitive (only works for subjects, not colors)
-      const subjectList = subjects.split(",").map(s => s.trim().toUpperCase());
       // Add the query | Note: Don't get matchValues and matchFilters confused. They are both used here.
       if (matchValues === "all") {
         // Create a single query that contains each .where query for each subject
@@ -118,8 +139,6 @@ class AppController {
       }
     }
     if (colors) {
-      // Translate comma-separated colors into an array
-      const colorList = colors.split(",").map(s => s.trim());
       // Add the query | Note: Don't get matchValues and matchFilters confused. They are both used here.
       if (matchValues === "all") {
         // Create a single query that contains each .where query for each color
@@ -178,7 +197,7 @@ class AppController {
         snapshot.forEach(doc => {
           // Add this result to the results array if it's not been accounted for already
           if (!seen.has(doc.id)) {
-            seen.add(doc.data());
+            seen.add(doc.id);
             results.push({
               id: doc.id,
               ...doc.data()
@@ -192,6 +211,8 @@ class AppController {
         return res.status(404).send({ error: "No episodes found matching the given filters" });
       }
     }
+
+    results.sort((a, b) => a.air_date.toMillis() - b.air_date.toMillis());
 
     // Return the results of this query.
     return res.status(200).send(results);
