@@ -62,13 +62,22 @@ class AppController {
     try {
       // Get query params 'month', 'subjects', and 'colors'
       const { month, subjects, colors } = req.query;
-      // Get query param `matchValues`, case-insensitive, defaulting to 'all' if missing or invalid
-      const matchValues = ["all", "any"].includes((req.query.matchValues || "").toLowerCase())
-        ? req.query.matchValues.toLowerCase()
-        : "all"; // todo: consider changing to returning error 400 if value is invalid instead of silently defaulting to "all"
-      const matchFilters = ["all", "any"].includes((req.query.matchFilters || "").toLowerCase())
-        ? req.query.matchFilters.toLowerCase()
-        : "all"; // todo: consider changing to returning error 400 if value is invalid instead of silently defaulting to "all"
+      // Get query params `matchValues` and `matchFilters`, case-insensitive, defaulting to 'all' if missing
+      let matchValues = (req.query.matchValues || "all").toLowerCase();
+      // Validate `matchValues`
+      if (!["all", "any"].includes(matchValues)) {
+        return res.status(400).send({
+          error: "Invalid value for query param 'matchValues'. Expected 'all' or 'any'."
+        });
+      }
+
+      let matchFilters = (req.query.matchFilters || "all").toLowerCase();
+      // Validate `matchFilters`
+      if (!["all", "any"].includes(matchFilters)) {
+        return res.status(400).send({
+          error: "Invalid value for query param 'matchFilters'. Expected 'all' or 'any'."
+        });
+      }
 
       // Ensure at least one filter is provided
       if (!month && !subjects && !colors) {
@@ -86,12 +95,12 @@ class AppController {
       if (matchValues === "any") {
         // Ensure <= 10 subjects are specified if matchValues is set to "any" (due to Firebase query limitations)
         if (subjects && subjectList.length > 10) {
-          return res.status(400).send({ error: "Please specify less than 10 subjects when matchValues is set to \"any\"" })
+          return res.status(400).send({ error: "Please specify less than 10 subjects when matchValues is set to 'any'" })
         }
 
         // Ensure <= 10 colors are specified if matchValues is set to "any" (due to Firebase query limitations)
         if (colors && colorList.length > 10) {
-          return res.status(400).send({ error: "Please specify less than 10 colors when matchValues is set to \"any\"" })
+          return res.status(400).send({ error: "Please specify less than 10 colors when matchValues is set to 'any'" })
         }
       }
 

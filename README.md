@@ -95,8 +95,7 @@ Examples:
 - `/episodes/filter?matchFilters=any&matchValues=any`  
   Episodes must match at least one value from at least one filter.
 
-Both parameters are optional and case-insensitive. Invalid or missing values
-default to `all`.
+Both parameters are optional and case-insensitive. Missing values default to `all`.
 
 ### Route: /episodes/filterName
 
@@ -127,7 +126,7 @@ and `Exx` is the episode number (i.e., Episode 2 would be `E02` and Episode
    the file names to match. Ensure it is gitignored, as this is a highly
    sensitive file.
 2. If using a .env file for environment variables like `PORT`, put `.env` in the
-   `src/` directory.
+   `src/` directory. (or depending on how you run `app.js`, put it in the root directory)
 3. Open the root directory of this project (`atlas-the-joy-of-painting-api/`)
 4. Upload data to Firestore by running `python3 UploadData.py` (preferably with
    Python version 3.13)
