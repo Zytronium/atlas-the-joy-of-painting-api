@@ -3,24 +3,26 @@ const db = require("../utils/firebase");
 class AppController {
   static async getFromID(req, res) {
     try {
-    // Find episode from its ID
-    const episodeRef = db
-      .collection("episodes")
-      .doc(req.params.id);
-    const epDoc = await episodeRef.get();
+      // Find episode from its ID
+      const episodeRef = db
+        .collection("episodes")
+        .doc(req.params.id);
+      const epDoc = await episodeRef.get();
 
-    // Check if the episode exists
-    if (!epDoc.exists)
-      return res.status(404).send({ error: "Episode not found." });
+      // Check if the episode exists
+      if (!epDoc.exists)
+        return res.status(404).send({ error: "Episode not found." });
 
-    // Return all data on this episode
-    return res.status(200).send({ id: epDoc.id, ...epDoc.data() });
+      // Return all data on this episode
+      return res.status(200).send({ id: epDoc.id, ...epDoc.data() });
 
     } catch (err) {
+      let message = "An internal server error occurred";
       if (process.env.ENV === "development") {
         console.error(err);
+        message += `: ${err.message}`;
       }
-      return res.status(500).send({ error: `An internal server error occurred: ${err.message}` });
+      return res.status(500).send({ error: message });
     }
   }
 
@@ -47,10 +49,12 @@ class AppController {
       const epDoc = querySnapshot.docs[0];
       return res.status(200).send({ id: epDoc.id, ...epDoc.data() });
     } catch (err) {
+      let message = "An internal server error occurred";
       if (process.env.ENV === "development") {
         console.error(err);
+        message += `: ${err.message}`;
       }
-      return res.status(500).send({ error: `An internal server error occurred: ${err.message}` });
+      return res.status(500).send({ error: message });
     }
   }
 
@@ -85,21 +89,22 @@ class AppController {
           return res.status(400).send({ error: "Please specify less than 10 subjects when matchValues is set to \"any\"" })
         }
 
-        // Ensure <= 10 subjects are specified if matchValues is set to "any" (due to Firebase query limitations)
+        // Ensure <= 10 colors are specified if matchValues is set to "any" (due to Firebase query limitations)
         if (colors && colorList.length > 10) {
           return res.status(400).send({ error: "Please specify less than 10 colors when matchValues is set to \"any\"" })
         }
       }
 
-      // Get the "episodes" collection reference as a starter for the master query if `matchFilters` is set to "all"
-      let masterQuery = db.collection("episodes");
-
       // Create an array to contain each individual Firebase query for each filter
-      const queries = []; // This allows running each query separately if `matchFilters` is set to "any"
-
-      // `masterQuery` is used if `matchFilters` === "all", else, `queries` is used.
+      const queries = []; // This is used instead of a single master query
+      //                     because some queries (such as array-contains)
+      //                     can't be used more than once in a single query.
+      //                     It also helps separate queries when matchFilters
+      //                     is set to "any"
 
       // Build the query from the filters given
+
+      // Month filtering
       if (month) {
         // Translate `MM/YYYY` to a Firebase timestamp (month start and end timestamps)
         const [monthStr, yearStr] = month.split("/");
@@ -115,70 +120,38 @@ class AppController {
         }
 
         // Add the query
-        if (matchFilters === "all") {
-          masterQuery = masterQuery
+        queries.push(
+          db.collection("episodes")
             .where("air_date", ">=", start)
-            .where("air_date", "<", end);
-        } else {
-          queries.push(
-            db.collection("episodes")
-              .where("air_date", ">=", start)
-              .where("air_date", "<", end)
-          );
-        }
+            .where("air_date", "<", end)
+        );
       }
-      if (subjects) {
-        // Add the query | Note: Don't get matchValues and matchFilters confused. They are both used here.
-        if (matchValues === "all") {
-          // Create a single query that contains each .where query for each subject
-          let query = db.collection("episodes");
 
+      // Subjects filtering
+      if (subjects) {
+        // Add the query
+        if (matchValues === "all") {
           // Add a query for each subject in the array
-          if (matchFilters === "all") {
-            subjectList.forEach(value => {
-              masterQuery = masterQuery.where("subjects", "array-contains", value);
-            });
-          } else {
-            subjectList.forEach(value => {
-              query = query.where("subjects", "array-contains", value);
-            });
-            // Add these as a single query to the queries array
-            queries.push(query);
-          }
+          subjectList.forEach(value => {
+            queries.push(db.collection("episodes").where("subjects", "array-contains", value));
+          });
         } else {
           // Add a single query for the entire subject array
-          if (matchFilters === "all") {
-            masterQuery = masterQuery.where("subjects", "array-contains-any", subjectList);
-          } else {
-            queries.push(db.collection("episodes").where("subjects", "array-contains-any", subjectList));
-          }
+          queries.push(db.collection("episodes").where("subjects", "array-contains-any", subjectList));
         }
       }
-      if (colors) {
-        // Add the query | Note: Don't get matchValues and matchFilters confused. They are both used here.
-        if (matchValues === "all") {
-          // Create a single query that contains each .where query for each color
-          let query = db.collection("episodes");
 
+      // Colors filtering
+      if (colors) {
+        // Add the query
+        if (matchValues === "all") {
           // Add a query for each color in the array
-          if (matchFilters === "all") {
-            colorList.forEach(value => {
-              masterQuery = masterQuery.where("colors", "array-contains", value);
-            });
-          } else {
-            colorList.forEach(value => {
-              query = query.where("colors", "array-contains", value);
-            });
-            // Add these as a single query to the queries array
-            queries.push(query);
-          }
+          colorList.forEach(value => {
+            queries.push(db.collection("episodes").where("colors", "array-contains", value));
+          });
         } else {
-          if (matchFilters === "all") {
-            masterQuery = masterQuery.where("colors", "array-contains-any", colorList);
-          } else {
-            // Add a single query for the entire color array
-            queries.push(db.collection("episodes").where("colors", "array-contains-any", colorList));
-          }
+          // Add a single query for the entire color array
+          queries.push(db.collection("episodes").where("colors", "array-contains-any", colorList));
         }
       }
 
@@ -186,21 +159,37 @@ class AppController {
       let results = [];
 
       if (matchFilters === "all") {
-        // Run the master query
+        // Run all queries and then only return episodes that appear in all query results
 
-        // Get list of episodes matching the given filters
-        const snapshot = await masterQuery.get()
+        // Get each snapshot containing the episodes matching any of the filters for each query
+        const snapshots = await Promise.all(queries.map(q => q.get()));
+        let matches = {}; // Map of all results that matched ALL filters
 
-        // Check if any documents were found
-        if (snapshot.empty) {
-          return res.status(404).send({ error: "No episodes found matching the given filters." });
+        // Start with all episodes from the first query's snapshot
+        snapshots[0].forEach(doc => {
+          matches[doc.id] = doc.data();
+        });
+
+        // ~~~~~~~~ THE GREAT FILTERING ~~~~~~~~ \\ (Must be read in Super Smash Bros announcer voice)
+        // (Filter out episodes that aren't in all other snapshots)
+        for (let i = 1; i < snapshots.length; i++) {
+          // Get a list of all episode IDs from this snapshot
+          const snapshotIDs = new Set(snapshots[i].docs.map(doc => doc.id));
+          // Delete all episodes from `matches` whose IDs are not in `snapshotIDs`
+          for (const key of Object.keys(matches)) {
+            if (!snapshotIDs.has(key)) {
+              delete matches[key];
+            }
+          }
         }
 
-        // Map all matching docs to an array of episodes
-        results = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        // Get a list of each episode that survived The Great Filtering | { { doc.id: doc.data() }, ... } -> [ { doc.id, ...doc.data() }, ... ]
+        results = Object.entries(matches).map(([id, data]) => ({ id, ...data }));
+
+        // Check if any results were found
+        if (results.length === 0) {
+          return res.status(404).send({ error: "No episodes found matching the given filters" });
+        }
       } else {
         // Run all queries in `queries`
 
@@ -233,10 +222,12 @@ class AppController {
       // Return the results of this query.
       return res.status(200).send(results);
     } catch (err) {
+      let message = "An internal server error occurred";
       if (process.env.ENV === "development") {
         console.error(err);
+        message += `: ${err.message}`;
       }
-      return res.status(500).send({ error: `An internal server error occurred: ${err.message}` });
+      return res.status(500).send({ error: message });
     }
   }
 }

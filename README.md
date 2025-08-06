@@ -140,6 +140,10 @@ and `Exx` is the episode number (i.e., Episode 2 would be `E02` and Episode
    `3000` with `PORT`'s value if using environment variables)
 3. Test either in browser or with Postman
 
+Note: to get more debug information, both in server console and in the response
+JSON, when an unexpected error occurs, set environment variable `ENV` to
+`development`.
+
 ----
 
 ## Example usage
