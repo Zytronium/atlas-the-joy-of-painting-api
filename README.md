@@ -143,11 +143,15 @@ Note: to get more debug information, both in server console and in the response
 JSON, when an unexpected error occurs, set environment variable `ENV` to
 `development`.
 
+Note2: Due to Firebase query limitations, this API has to perform a lot of logic
+itself and make extra queries. This slows down large requests significantly. I
+reccomend similar projects in the future don't use Firebase.
+
 ----
 
 ## Example usage
 
-**`GET` http://0.0.0.0:3001/episodes/S02E06**  
+**`GET` http://0.0.0.0:3000/episodes/S02E06**  
 Response:
 
 ```json
@@ -194,7 +198,7 @@ Server output:
 GET /episodes/S02E06 200 189.719 ms - 499
 ```
 
-**`GET` http://0.0.0.0:3001/episodes/filter?matchValues=any&subjects=steve_ross,circle_frame,double_oval_frame**  
+**`GET` http://0.0.0.0:3000/episodes/filter?matchValues=any&subjects=steve_ross,circle_frame,double_oval_frame**  
 Response:
 ```json
 [
@@ -286,10 +290,10 @@ GET /episodes/filter?matchValues=any&subjects=steve_ross,circle_frame,double_ova
 
 - [X] ​0. Design a Database (5/5 pts)
 - [X] ​1. Extract, Transform, Load (4/4 pts)
-- [ ] ​2. API (3/4 pts)
+- [X] ​2. API (4/4 pts)
 
 
 - [X] Readme
-- [ ] **Everything Done ✓** (12/13 pts) - ~92%
+- [X] **Everything Done ✓** (13/13 pts) - 100%
 
 ---
