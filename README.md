@@ -284,6 +284,27 @@ Server output:
 GET /episodes/filter?matchValues=any&subjects=steve_ross,circle_frame,double_oval_frame 200 4100.473 ms - 7673
 ```
 
+Server output example during testing:
+```
+Server running on port 3001
+GET /episodes/filter?matchValues=ANY&colors=Phthalo%20Green,Phthalo%20Blue,Prussian%20Blue,Bright%20Red&subjects=tree,guest&matchFilters=ALL&month=04/1988 200 8606.906 ms - 512
+GET /episodes/filter?matchValues=ANY&colors=Phthalo%20Green,Phthalo%20Blue,Prussian%20Blue,Bright%20Red&subjects=tree,guest&matchFilters=any%20&month=04/1988 400 0.816 ms - 82
+GET /episodes/filter?matchValues=ANY&colors=Phthalo%20Green,Phthalo%20Blue,Prussian%20Blue,Bright%20Red&subjects=tree,guest&matchFilters=obamna&month=04/1988 400 0.575 ms - 82
+GET /episodes/filter?matchValues=ANY&colors=Phthalo%20Green,Phthalo%20Blue,Prussian%20Blue,Bright%20Red&subjects=tree,guest&matchFilters=&month=04/1988 200 5089.309 ms - 512
+GET /episodes/filter?matchValues=any&colors=Phthalo%20Green,Phthalo%20Blue,Prussian%20Blue,Bright%20Red&subjects=tree,guest&matchFilters=any&month=04/1988 200 2150.926 ms - 202902
+GET /episodes/filter?colors=Phthalo%20Green,Phthalo%20Blue,Prussian%20Blue,Bright%20Red&subjects=tree,guest 200 11571.682 ms - 1134
+GET /episodes/filter?matchValues=any&colors=Phthalo%20Green,Phthalo%20Blue,Prussian%20Blue,Bright%20Red&subjects=tree,guest 200 6327.477 ms - 182709
+GET /episodes/filter?colors=Phthalo%20Green,Phthalo%20Blue,Prussian%20Blue,Bright%20Red&subjects=tree,guest&matchFilters=any 200 16492.863 ms - 202902
+GET /episodes/filter?matchValues=all&colors=Phthalo%20Green,Prussian%20Blue,Bright%20Red&subjects=tree,guest,steve_ross 200 17887.285 ms - 1134
+GET /episodes/filter?colors=Phthalo%20Green,Prussian%20Blue,Bright%20Red&subjects=tree,guest,steve_ross&month=04/1988 404 15159.119 ms - 56
+GET /episodes/filter?subjects=tree,guest,steve_ross&month=04/1988 404 1744.120 ms - 56
+GET /episodes/filter?subjects=guest,steve_ross&month=04/1988 404 306.895 ms - 56
+GET /episodes/filter?subjects=guest,steve_ross 200 344.577 ms - 6020
+```
+**Log content:**  
+`METHOD url StatusCode ResponseTime ms - BytesReturned`  
+(Maybe the `-` between ms and bytes returned means something and is just N/A in this case. I'm not sure.)
+
 ----
 
 ### ✅ Tasks checklist:
